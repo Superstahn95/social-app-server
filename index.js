@@ -26,6 +26,18 @@ app.use(cors());
 
 // routes
 app.use("/api/v1/auth", require("./routes/authRoute"));
+app.use("/api/v1/user", require("./routes/userRoute"));
+
+//global error handler
+app.use((err, req, res, next) => {
+  const statusCode = err.statusCode || 500;
+  const message = err.message || "Something went wrong";
+  res.status(statusCode).json({
+    status: "failed",
+    message,
+    err,
+  });
+});
 
 app.listen(PORT, () => {
   console.log(`Server running on Port ${PORT}`);
