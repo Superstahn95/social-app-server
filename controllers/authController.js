@@ -3,11 +3,14 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 const CustomError = require("../utils/customError");
+const cloudinary = require("../config/cloudinary");
 
 exports.register = asyncErrorHandler(async (req, res, next) => {
+  console.log("we are in the register controller");
   const { firstName, lastName, email, password, location, occupation } =
     req.body;
   const { file } = req;
+
   //handle file upload
   const salt = await bcrypt.genSalt(10);
   const hashedPwd = await bcrypt.hash(password, salt);
@@ -21,6 +24,18 @@ exports.register = asyncErrorHandler(async (req, res, next) => {
     viewedProfile: Math.floor(Math.random() * 10000),
     impressions: Math.floor(Math.random() * 10000),
   });
+
+  if (file) {
+    //cloudinary functionality
+    console.log("processing file upload");
+    const { secure_url: url, public_id } = await cloudinary.uploader.upload(
+      file.path,
+      { folder: "mern-social-media" }
+    );
+    // user.image = { url, public_id };
+    newUser.profilePicture = { secure_url: url, public_id };
+  }
+
   const savedUser = await newUser.save();
   res.status(201).json({
     status: "success",
