@@ -28,6 +28,8 @@ app.use("/api/v1/auth", require("./routes/authRoute"));
 app.use("/api/v1/user", require("./routes/userRoute"));
 app.use("/api/v1/post", require("./routes/postRoute"));
 app.use("/api/v1/comment", require("./routes/commentRoute"));
+app.use("/api/v1/conversation", require("./routes/conversationRoute"));
+app.use("/api/v1/message", require("./routes/messageRoute"));
 //global error handler
 // app.use((err, req, res, next) => {
 //   const statusCode = err.statusCode || 500;
