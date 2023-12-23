@@ -19,6 +19,7 @@ exports.createConversation = asyncErrorHandler(async (req, res, next) => {
 
 exports.getConversation = asyncErrorHandler(async (req, res, next) => {
   const { userId } = req.params;
+  console.log(userId);
   const conversation = await Conversation.find({
     members: { $in: [userId] },
   });
