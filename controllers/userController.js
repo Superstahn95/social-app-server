@@ -1,9 +1,11 @@
 const User = require("../models/user");
 const asyncErrorHandler = require("../utils/asyncErrorHandler");
 const CustomError = require("../utils/customError");
+const cloudinary = require("../config/cloudinary");
 
 exports.getUser = asyncErrorHandler(async (req, res, next) => {
   console.log("getting the user");
+  console.log(req.params);
   const { id } = req.params;
   console.log(id);
   const user = await User.findById(id);
@@ -75,5 +77,51 @@ exports.addRemoveFriend = asyncErrorHandler(async (req, res, next) => {
   res.status(200).json({
     status: "success",
     friends: formattedFriends,
+  });
+});
+
+exports.getAllUsers = asyncErrorHandler(async (req, res, next) => {
+  const users = await User.find();
+
+  res.status(200).json({
+    status: "success",
+    users,
+  });
+});
+
+exports.updateUser = asyncErrorHandler(async (req, res, next) => {
+  //user id should be present in the req.user
+
+  const user = await User.findById(req.user.id);
+
+  const { file } = req;
+
+  if (!user) {
+    const err = new CustomError("No user found", 404);
+    return next(err);
+  }
+
+  const updatedUser = await User.findByIdAndUpdate(
+    req.user.id,
+    { $set: req.body },
+    { new: true }
+  );
+
+  if (file) {
+    if (user.profilePicture) {
+      const { public_id: imageId } = user.profilePicture;
+      await cloudinary.uploader.destroy(`mern-social-media/${imageId}`);
+    }
+    const { secure_url, public_id } = await cloudinary.uploader.upload(
+      file.path,
+      { folder: "mern-social-media" }
+    );
+
+    updatedUser.profilePicture = { secure_url, public_id };
+  }
+  await updatedUser.save();
+  res.status(200).json({
+    status: "success",
+    user: updatedUser,
   });
 });

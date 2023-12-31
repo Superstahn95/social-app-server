@@ -76,35 +76,42 @@ const getUser = (id) => {
   return users.find((user) => user.userId === id);
 };
 
+const removeUser = (id) => {
+  console.log(id);
+
+  users = users.filter((user) => user.socketId !== id);
+  console.log("New users array in the our socket connection");
+  console.log(users);
+};
+
 io.on("connection", (socket) => {
-  console.log("a user connected");
   socket.on("disconnect", () => {
     console.log("a user disconnected");
+    removeUser(socket.id);
+    console.log(users);
+    io.emit("getUsers", users);
   });
   socket.on("addUser", (userId) => {
-    console.log(`The socket id is....${socket.id}`);
     //push user and scoket.id object to users array if it does not already exist
+    console.log("about adding a user");
+    console.log(users);
     addUser(userId, socket.id);
+    console.log(users);
     io.emit("getUsers", users);
     console.log(users);
   });
   socket.on("sendMessage", (data) => {
     //get prospective receiver from the users array
     const { text, senderId, receiverId } = data;
-    console.log(text);
     const messageReceiver = getUser(receiverId);
-    console.log(messageReceiver);
-    io.to(messageReceiver.socketId).emit("getMessage", {
-      text,
-      senderId,
-    });
+    console.log(`Send messsage to ${messageReceiver?.socketId}`);
+    if (messageReceiver) {
+      io.to(messageReceiver.socketId).emit("getMessage", {
+        text,
+        senderId,
+      });
+    } else {
+      return;
+    }
   });
 });
-
-// text: newMessage,
-// senderId: userId,
-// receiverId,
-
-// senderId
-// senderId,
-// {text: "Hey fake guy", senderId: "65786ea5baa4a1e1f0d28cb4", receiverId: "6580988e8f640bb1d7063da9"}
