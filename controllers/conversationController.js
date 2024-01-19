@@ -24,6 +24,8 @@ exports.getConversation = asyncErrorHandler(async (req, res, next) => {
     members: { $in: [userId] },
   });
 
+  //the goal is to return every conversation that has the userId in the members array
+
   res.status(200).json({
     status: "success",
     conversation,
